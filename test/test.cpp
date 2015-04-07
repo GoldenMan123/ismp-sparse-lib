@@ -24,6 +24,8 @@ csr_matrix<double> read_matrix() {
     }
     for (int i = 0; i < B.n_nz; ++i) {
         cin >> col >> row >> val;
+        --col;
+        --row;
         ++rcount[row];
         B.cols[i] = col;
         B.elms[i] = val;
