@@ -1,4 +1,5 @@
 #include "cgSolver/cgSolver.h"
+#include "fsai/fsai.h"
 
 #include <iostream>
 
@@ -73,13 +74,17 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             pA[i] = 0;
         }
 
+        /// Init FSAI preconditioner
+        csr_matrix<double> Ainv1, Ainv2;
+        fsai(Ainv1, Ainv2, A);
+
         do
         {
             ++nIters;
             rhoOld = rho;
 
             /// Execute preconditioning
-            wA = rA;
+            wA = spvm(Ainv1, spvm(Ainv2, rA));
             /** TODO **/
 
             /// Update search directions

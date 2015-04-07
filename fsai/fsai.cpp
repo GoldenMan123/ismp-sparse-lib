@@ -327,8 +327,8 @@ void fsai_impl(csr_matrix<out_real> &Ainv1,
     /// Calculate Ainv1
     calculate_factor(Ainv1, AT);
 
-    /// Transform Ainv1
-    Ainv1 = out_transform(Ainv1);
+    /// Transform Ainv1 (for CUDA solver)
+    //Ainv1 = out_transform(Ainv1);
 
     /// Calculate transposed Ainv2
     Ainv2 = csr_transpose(Ainv1);
