@@ -9,6 +9,12 @@ struct matrix_shape
 };
 
 template<class T>
+struct dense_matrix: matrix_shape
+{
+    vector<vector<T, host_memory_space_tag>, host_memory_space_tag> data;
+};
+
+template<class T>
 struct coo_matrix: matrix_shape
 {
   vector<int> rows, cols;
@@ -33,6 +39,12 @@ struct csr_matrix: matrix_shape
   {
     return (sizeof(unsigned) * (row_ptr.size() + cols.size())
 	    + sizeof(T) * (elms.size() + 2 * n_rows));
+  }
+  void clear() {
+    n_rows = n_cols = n_nz = 0;
+    row_ptr.clear();
+    cols.clear();
+    elms.clear();
   }
 };
 
