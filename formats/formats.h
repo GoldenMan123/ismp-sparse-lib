@@ -48,6 +48,21 @@ struct csr_matrix: matrix_shape
   }
 };
 
+template<class T>
+vector<T> spvm(const csr_matrix<T> &A, const vector<T> &X) {
+    vector<T> R(A.n_rows);
+    #ifdef openmp
+    #pragma omp parallel for
+    #endif
+    for (int i = 0; i < R.size(); ++i) {
+        R[i] = 0;
+        for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) {
+            R[i] += A.elms[j] * X[A.cols[j]];
+        }
+    }
+    return R;
+}
+
 struct slell_params
 {
   unsigned S, H, V, D;

@@ -19,7 +19,7 @@ LIB = libispm0-pic.a
 all: $(LIB)
 
 SPMV_OBJS  = cuda/spmv/dispatch-float-float.o cuda/spmv/dispatch-double-float.o cuda/spmv/dispatch-double-double.o
-EXTRA_OBJS = util/cuda/sblas.o fastainv/fastainv.o util/cuda/initialize.o fsai/fsai.o
+EXTRA_OBJS = util/cuda/sblas.o fastainv/fastainv.o util/cuda/initialize.o fsai/fsai.o cgSolver/cgSolver.o
 OBJS = $(SPMV_OBJS) $(EXTRA_OBJS)
 
 $(LIB): $(OBJS)
@@ -36,6 +36,9 @@ fastainv/fastainv.o: fastainv/fastainv.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
     
 fsai/fsai.o: fsai/fsai.cpp
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+cgSolver/cgSolver.o: cgSolver/cgSolver.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 clean:
