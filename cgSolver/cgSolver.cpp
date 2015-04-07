@@ -35,14 +35,6 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
     /// Calculate initial residual
     wA = spvm(A, x);
 
-    double normFactor = 1; /** TODO **/
-
-    for (int i = 0; i < rA.size(); ++i) {
-        rA[i] = b[i] - wA[i];
-    }
-
-    double res = sum_mag(rA) / normFactor;
-
     /// Calc matrix great
     double great = 0.0;
     for (int i = 0; i < A.n_rows; ++i) {
@@ -50,6 +42,20 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             great = max(great, abs(A.elms[j]));
         }
     }
+
+    /// Calc b great
+    double b_great = 0.0;
+    for (int i = 0; i < b.size(); ++i) {
+        b_great = max(b_great, abs(b[i]));
+    }
+
+    double normFactor = great;
+
+    for (int i = 0; i < rA.size(); ++i) {
+        rA[i] = b[i] - wA[i];
+    }
+
+    double res = sum_mag(rA) / normFactor;
 
     std::cerr << "Residual: " << res << std::endl;
 
@@ -71,6 +77,7 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
             /// Execute preconditioning
             //preconPtr_->precondition(wA, rA, cmpt);
+            wA = rA;
             /** TODO **/
 
             /// Update search directions
