@@ -16,14 +16,19 @@ NVCCFLAGS := -O2 -v -I. -gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) 
 	--compiler-options -fPIC
 
 LIB = libispm0-pic.a
-all: $(LIB)
+TEST = run_test
+all: $(LIB) $(TEST)
 
 SPMV_OBJS  = cuda/spmv/dispatch-float-float.o cuda/spmv/dispatch-double-float.o cuda/spmv/dispatch-double-double.o
 EXTRA_OBJS = util/cuda/sblas.o fastainv/fastainv.o util/cuda/initialize.o fsai/fsai.o cgSolver/cgSolver.o
+TEST_OBJS = test/test.o fsai/fsai.o cgSolver/cgSolver.o
 OBJS = $(SPMV_OBJS) $(EXTRA_OBJS)
 
 $(LIB): $(OBJS)
 	ar cr $@ $^
+
+$(TEST): $(TEST_OBJS)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 cuda/spmv/dispatch-%.o: cuda/spmv/dispatch-%.cu
 	$(NVCC) -c $< -o $@ $(NVCCFLAGS) --compiler-options -fpermissive
@@ -39,6 +44,9 @@ fsai/fsai.o: fsai/fsai.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 cgSolver/cgSolver.o: cgSolver/cgSolver.cpp
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+test/test.o: test/test.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 clean:
