@@ -59,6 +59,8 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
     std::cerr << "Residual: " << res << std::endl;
 
+    int nIters = 0;
+
     /// cg iterations
     if (res > tol) {
         double rho = great;
@@ -73,13 +75,11 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
         do
         {
+            ++nIters;
             rhoOld = rho;
 
             /// Execute preconditioning
-            //preconPtr_->precondition(wA, rA, cmpt);
-            for (int i = 0;  i < wA.size(); ++i) {
-                wA[i] = rA[i];
-            }
+            wA = rA;
             /** TODO **/
 
             /// Update search directions
@@ -106,4 +106,6 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             std::cerr << "Residual: " << res << std::endl;
         } while (res > tol);
     }
+
+    std::cerr << "nIters: " << nIters << std::endl;
 }

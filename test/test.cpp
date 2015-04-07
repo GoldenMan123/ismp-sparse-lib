@@ -4,32 +4,60 @@
 #include <string>
 #include <cstdlib>
 #include <cstdio>
+#include <algorithm>
 
 using std::cerr;
 using std::cout;
 using std::cin;
 using std::endl;
 
+struct colelem {
+    int col;
+    double elem;
+    colelem(int _col, double _elem) : col(_col), elem(_elem) {}
+    bool operator<(const colelem &c) const {
+        return col < c.col;
+    }
+};
+
 csr_matrix<double> read_matrix() {
     csr_matrix<double> B;
     cin >> B.n_rows >> B.n_cols >> B.n_nz;
     B.row_ptr.resize(B.n_rows + 1);
+    vector<vector<colelem> > M(B.n_rows);
+    int cnt = 0;
+    for (int i = 0; i < B.n_nz; ++i) {
+        int row, col;
+        double val;
+        cin >> row >> col >> val;
+        --row;
+        --col;
+        M[row].push_back(colelem(col, val));
+        ++cnt;
+        if (row != col) {
+            M[col].push_back(colelem(row, val));
+            ++cnt;
+        }
+    }
+    for (int i = 0; i < B.n_rows; ++i) {
+        std::sort(M[i].begin(), M[i].end());
+    }
+    B.n_nz = cnt;
     B.cols.resize(B.n_nz);
     B.elms.resize(B.n_nz);
-    int row, col;
-    double val;
     B.row_ptr[0] = 0;
     vector<int> rcount(B.n_rows);
     for (int i = 0; i < rcount.size(); ++i) {
         rcount[i] = 0;
     }
-    for (int i = 0; i < B.n_nz; ++i) {
-        cin >> col >> row >> val;
-        --col;
-        --row;
-        ++rcount[row];
-        B.cols[i] = col;
-        B.elms[i] = val;
+    cnt = 0;
+    for (int i = 0; i < B.n_rows; ++i) {
+        for (int j = 0; j < M[i].size(); ++j) {
+            ++rcount[i];
+            B.cols[cnt] = M[i][j].col;
+            B.elms[cnt] = M[i][j].elem;
+            ++cnt;
+        }
     }
     for (int i = 0; i < B.n_rows; ++i) {
         B.row_ptr[i + 1] = B.row_ptr[i] + rcount[i];
