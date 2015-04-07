@@ -29,8 +29,8 @@ double sum_prod(const vector<double> &a, const vector<double> &b) {
 }
 
 void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<double> &b, double tol) {
-    vector<double> wA(x.size());
-    vector<double> rA(x.size());
+    vector<double> wA(b.size());
+    vector<double> rA(b.size());
 
     /// Calculate initial residual
     wA = spvm(A, x);
@@ -66,7 +66,7 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
         double alpha, beta, wApA;
 
-        vector<double> pA(x.size());
+        vector<double> pA(b.size());
         for (int i = 0; i < pA.size(); ++i) {
             pA[i] = 0;
         }
@@ -77,7 +77,9 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
             /// Execute preconditioning
             //preconPtr_->precondition(wA, rA, cmpt);
-            wA = rA;
+            for (int i = 0;  i < wA.size(); ++i) {
+                wA[i] = rA[i];
+            }
             /** TODO **/
 
             /// Update search directions
