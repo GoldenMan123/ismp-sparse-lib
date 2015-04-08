@@ -2,6 +2,7 @@
 #include "fsai/fsai.h"
 
 #include <iostream>
+#include <sys/time.h>
 
 template<typename T>
 T abs(const T &x) {
@@ -27,6 +28,13 @@ double sum_prod(const vector<double> &a, const vector<double> &b) {
         r += a[i] * b[i];
     }
     return r;
+}
+
+double get_time() {
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    return tv.tv_sec + 1e-6 * tv.tv_usec;
 }
 
 void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<double> &b, double tol) {
@@ -58,7 +66,7 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
     double res = sum_mag(rA) / normFactor;
 
-    std::cerr << "Residual: " << res << std::endl;
+    std::cerr << "Start residual: " << res << std::endl;
 
     int nIters = 0;
 
@@ -76,7 +84,10 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
 
         /// Init FSAI preconditioner
         csr_matrix<double> Ainv1, Ainv2;
+        double old_time = get_time();
         fsai(Ainv1, Ainv2, A);
+        std::cerr << "Preconditioner construction time: " << std::setprecision(3) << std::fixed << 1000.0 * (get_time() - old_time) << "ms" << std::endl;
+        double solve_start = old_time = get_time();
 
         do
         {
@@ -107,9 +118,20 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             }
             res = sum_mag(rA) / normFactor;
 
-            std::cerr << "Residual: " << res << std::endl;
+            if (get_time() - old_time > 0.1) {
+                std::cerr << "Iteration " << nIters << " residual: " << std::setprecision(3) << std::scientific << res << std::endl;
+                old_time = get_time();
+            }
         } while (res > tol);
+
+        std::cerr << "Solve time: " << std::setprecision(3) << std::fixed << 1000.0 * (get_time() - solve_start) << "ms" << std::endl;
     }
 
+    wA = spvm(A, x);
+    for (int i = 0; i < x.size(); ++i) {
+        rA[i] = b[i] - wA[i];
+    }
+
+    std::cerr << "final residual: " << std::setprecision(3) << std::scientific << sum_mag(rA) / normFactor << std::endl;
     std::cerr << "nIters: " << nIters << std::endl;
 }

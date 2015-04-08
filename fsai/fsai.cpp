@@ -2,6 +2,8 @@
 
 #include <omp.h>
 #include <iostream>
+#include <cmath>
+#include <set>
 
 template<typename real>
 csr_matrix<real> csr_transpose(const csr_matrix<real> &A) {
@@ -256,6 +258,12 @@ void calculate_factor(csr_matrix<out_real> &F, const csr_matrix<in_real> &A) {
 
         /// Solve small system
         vector<out_real> X = solve<in_real, out_real>(S);
+        if (abs(X.back()) > 1e-8) {
+            double dividor = sqrt(abs(X.back()));
+            for (int i = 0; i < X.size(); ++i) {
+                X[i] /= dividor;
+            }
+        }
         for (int i = 0; i < X.size(); ++i) {
             F.elms[F.row_ptr[row] + i] = X[i];
         }
@@ -320,6 +328,77 @@ csr_matrix<real> out_transform(const csr_matrix<real> &A) {
 }
 
 template<typename in_real, typename out_real>
+csr_matrix<out_real> square_pattern(const csr_matrix<in_real> &A) {
+    /// Init matrix
+    csr_matrix<out_real> B;
+    B.n_rows = A.n_rows;
+    B.n_cols = A.n_cols;
+    B.row_ptr.clear();
+    B.row_ptr.resize(B.n_rows + 1);
+    B.cols.clear();
+    B.elms.clear();
+
+    /// Allocate temp arrays
+    int *rcount = new int[B.n_rows];
+    int *rindex = new int[B.n_rows];
+
+    /// Calculate row count
+    for (int i = 0; i < B.n_rows; ++i) {
+        std::set<int> tmp;
+        tmp.insert(i);
+        for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) {
+            for (int k = A.row_ptr[A.cols[j]]; k < A.row_ptr[A.cols[j] + 1]; ++k) {
+                if (A.cols[k] >= i) {
+                    break;
+                }
+                tmp.insert(A.cols[k]);
+            }
+        }
+        rcount[i] = tmp.size();
+    }
+
+    /// Calculare row_ptr
+    rindex[0] = 0;
+    for (int i = 1; i < B.n_rows; ++i) {
+        rindex[i] = rindex[i - 1] + rcount[i - 1];
+    }
+
+    for (int i = 0; i < B.n_rows; ++i) {
+        B.row_ptr[i] = rindex[i];
+    }
+    B.n_nz = B.row_ptr[B.n_rows] = rindex[B.n_rows - 1] + rcount[B.n_rows - 1];
+
+    /// Fill cols & elms
+    B.cols.resize(B.n_nz);
+    B.elms.resize(B.n_nz);
+
+    for (int i = 0; i < B.n_rows; ++i) {
+        std::set<int> tmp;
+        tmp.insert(i);
+        for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) {
+            for (int k = A.row_ptr[A.cols[j]]; k < A.row_ptr[A.cols[j] + 1]; ++k) {
+                if (A.cols[k] >= i) {
+                    break;
+                }
+                tmp.insert(A.cols[k]);
+            }
+        }
+        for (auto j : tmp) {
+            B.cols[rindex[i]] = j;
+            B.elms[rindex[i]] = 1;
+            ++rindex[i];
+        }
+    }
+
+    /// Free temp arrays
+    delete[] rcount;
+    delete[] rindex;
+
+    /// Return result
+    return B;
+}
+
+template<typename in_real, typename out_real>
 void fsai_impl(csr_matrix<out_real> &Ainv1,
     csr_matrix<out_real> &Ainv2,
     const csr_matrix<in_real> &A) {
@@ -328,7 +407,7 @@ void fsai_impl(csr_matrix<out_real> &Ainv1,
     csr_matrix<in_real> AT = csr_transpose(A);
 
     /// Generate pattern for Ainv1
-    Ainv1 = generate_pattern<in_real, out_real>(A);
+    Ainv1 = square_pattern<in_real, out_real>(A);
 
     /// Calculate Ainv1
     calculate_factor(Ainv1, AT);

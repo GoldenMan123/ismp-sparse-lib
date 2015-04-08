@@ -6,7 +6,7 @@ CUDA_ARCH = 35
 CUDA_INCLUDE := -I$(CUDA_PATH)/include/
 
 CXXWARN := -Wall -Wno-sign-compare
-CXXOPT  := -O2 -fopenmp
+CXXOPT  := -O2 -fopenmp -std=c++0x
 CXXFLAGS := $(CXXOPT) -g $(CXXWARN) -fPIC -I. $(CUDA_INCLUDE)
 
 NVCCFLAGS := -O2 -v -I. -gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) \
