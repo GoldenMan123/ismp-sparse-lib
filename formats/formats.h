@@ -3,6 +3,9 @@
 
 #include "util/cuda/vector.h"
 
+#include <iostream>
+#include <iomanip>
+
 struct matrix_shape
 {
   int n_rows, n_cols, n_nz;
@@ -127,5 +130,39 @@ struct slell_matrix: matrix_shape
     return &elms[slice_ptr[slice * slice_ents]];
   }
 };
+
+template<typename real>
+void print_matrix(const csr_matrix<real> &A) {
+    for (int i = 0; i < A.n_rows; ++i) {
+        int j = 0;
+        for (int k = A.row_ptr[i]; k < A.row_ptr[i + 1]; ++k) {
+            while (j < A.cols[k]) {
+                std::cout << std::setprecision(3) << std::fixed << std::setw(16) << 0.0 << " ";
+                ++j;
+            }
+            if (j == A.cols[k]) {
+                std::cout << std::setprecision(3) << std::fixed << std::setw(16) << A.elms[k] << " ";
+                ++j;
+            }
+        }
+        while (j < A.n_cols) {
+            std::cout << std::setprecision(3) << std::fixed << std::setw(16) << 0.0 << " ";
+            ++j;
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+template<typename real>
+void print_matrix(const dense_matrix<real> &A) {
+    for (int i = 0; i < A.n_rows; ++i) {
+        for (int j = 0; j < A.n_cols; ++j) {
+            std::cout << std::setprecision(3) << std::fixed << std::setw(16) << A.data[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
 
 #endif

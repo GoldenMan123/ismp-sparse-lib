@@ -1,7 +1,7 @@
 #include "fsai/fsai.h"
 
 #include <omp.h>
-#include <cassert>
+#include <iostream>
 
 template<typename real>
 csr_matrix<real> csr_transpose(const csr_matrix<real> &A) {
@@ -111,9 +111,11 @@ csr_matrix<out_real> generate_pattern(const csr_matrix<in_real> &A) {
                 break;
             }
             B.cols[rindex[i]] = A.cols[j];
+            B.elms[rindex[i]] = 1;
             ++rindex[i];
         }
         B.cols[rindex[i]] = i;
+        B.elms[rindex[i]] = 1;
     }
 
     /// Free temp arrays
@@ -145,9 +147,6 @@ void swap(int &a, int &b) {
 
 template<typename in_real, typename out_real>
 vector<out_real> solve(dense_matrix<in_real> &A) {
-    /// Check system
-    assert(A.n_rows + 1 == A.n_cols);
-
     /// Define system size N
     int N = A.n_rows;
 
@@ -212,7 +211,7 @@ vector<out_real> solve(dense_matrix<in_real> &A) {
 
 template<typename in_real, typename out_real>
 void calculate_factor(csr_matrix<out_real> &F, const csr_matrix<in_real> &A) {
-    /// Calculare F's rows
+    /// Calculate F's rows
     #pragma omp parallel for
     for (int row = 0; row < F.n_rows; ++row) {
         /// Init matrix for small system
@@ -277,6 +276,10 @@ csr_matrix<real> out_transform(const csr_matrix<real> &A) {
     /// Allocate temp arrays
     int *rcount = new int[B.n_rows];
     int *rindex = new int[B.n_rows];
+
+    for (int i = 0; i < A.n_rows; ++i) {
+        rcount[i] = 0;
+    }
 
     /// Calculate row count
     for (int i = 0; i < A.n_rows; ++i) {
