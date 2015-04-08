@@ -107,6 +107,9 @@ csr_matrix<out_real> generate_pattern(const csr_matrix<in_real> &A) {
     /// Fill cols
     for (int i = 0; i < A.n_rows; ++i) {
         for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) {
+            if (A.cols[j] >= i) {
+                break;
+            }
             B.cols[rindex[i]] = A.cols[j];
             ++rindex[i];
         }

@@ -84,7 +84,7 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             rhoOld = rho;
 
             /// Execute preconditioning
-            wA = spvm(Ainv1, spvm(Ainv2, rA));
+            wA = spvm(Ainv2, spvm(Ainv1, rA));
             /** TODO **/
 
             /// Update search directions
