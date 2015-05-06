@@ -124,9 +124,12 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
             }
         } while (res > tol);
 
+        res = sum_mag(rA) / normFactor;            
+        std::cerr << "Iteration " << nIters << " residual: " << std::setprecision(3) << std::scientific << res << std::endl;
+
         std::cerr << "Solve time: " << std::setprecision(3) << std::fixed << 1000.0 * (get_time() - solve_start) << "ms" << std::endl;
     }
-
+    
     wA = spvm(A, x);
     for (int i = 0; i < x.size(); ++i) {
         rA[i] = b[i] - wA[i];
