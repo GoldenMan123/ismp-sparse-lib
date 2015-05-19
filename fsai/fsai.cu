@@ -422,7 +422,8 @@ void fsai_impl(csr_matrix<out_real> &Ainv1,
 
     /// Generate pattern for Ainv1
     PROFILE_BEGIN();
-    Ainv1 = square_pattern<in_real, out_real>(A);
+    //Ainv1 = square_pattern<in_real, out_real>(A);
+    Ainv1 = generate_pattern<in_real, out_real>(A);
     PROFILE_END("square_pattern");
 
     /// Calculate Ainv1

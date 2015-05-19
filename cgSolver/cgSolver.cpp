@@ -55,11 +55,15 @@ void cgSolver(vector<double> &x, const csr_matrix<double> &A, const vector<doubl
         }
     }
 
+    std::cerr << "great: " << great << std::endl;
+
     /// Calc b great
     double b_great = 0.0;
     for (int i = 0; i < b.size(); ++i) {
         b_great = max(b_great, abs(b[i]));
     }
+
+    std::cerr << "b_great: " << b_great << std::endl;
 
     double normFactor = great;
 
