@@ -1,6 +1,7 @@
 #include "fsai/fsai.h"
 
-#include <omp.h>
+#include <cuda_runtime_api.h>
+
 #include <iostream>
 #include <cmath>
 #include <set>
@@ -216,7 +217,6 @@ vector<out_real> solve(dense_matrix<in_real> &A) {
 template<typename in_real, typename out_real>
 void calculate_factor(csr_matrix<out_real> &F, const csr_matrix<in_real> &A) {
     /// Calculate F's rows
-    #pragma omp parallel for
     for (int row = 0; row < F.n_rows; ++row) {
         /// Init matrix for small system
         dense_matrix<in_real> S;
@@ -385,8 +385,8 @@ csr_matrix<out_real> square_pattern(const csr_matrix<in_real> &A) {
                 tmp.insert(A.cols[k]);
             }
         }
-        for (auto j : tmp) {
-            B.cols[rindex[i]] = j;
+        for (std::set<int>::iterator j = tmp.begin(); j != tmp.end(); ++j) {
+            B.cols[rindex[i]] = *j;
             B.elms[rindex[i]] = 1;
             ++rindex[i];
         }

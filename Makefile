@@ -28,7 +28,7 @@ $(LIB): $(OBJS)
 	ar cr $@ $^
 
 $(TEST): $(TEST_OBJS)
-	$(CXX) -o $@ $^ $(CXXFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) -lcudart
 
 cuda/spmv/dispatch-%.o: cuda/spmv/dispatch-%.cu
 	$(NVCC) -c $< -o $@ $(NVCCFLAGS) --compiler-options -fpermissive
@@ -40,8 +40,8 @@ util/cuda/%.o: util/cuda/%.cu
 fastainv/fastainv.o: fastainv/fastainv.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
     
-fsai/fsai.o: fsai/fsai.cpp
-	$(CXX) -c $< -o $@ $(CXXFLAGS)
+fsai/fsai.o: fsai/fsai.cu
+	$(NVCC) -c $< -o $@ $(NVCCFLAGS)
 
 cgSolver/cgSolver.o: cgSolver/cgSolver.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
