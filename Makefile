@@ -50,4 +50,4 @@ test/test.o: test/test.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 clean:
-	-rm $(OBJS) $(LIB)
+	-rm -f $(OBJS) $(LIB)
