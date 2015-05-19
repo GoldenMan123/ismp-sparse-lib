@@ -5,6 +5,8 @@
 #include <cmath>
 #include <set>
 
+extern double get_time();
+
 template<typename real>
 csr_matrix<real> csr_transpose(const csr_matrix<real> &A) {
     /// Init matrix
@@ -398,25 +400,43 @@ csr_matrix<out_real> square_pattern(const csr_matrix<in_real> &A) {
     return B;
 }
 
+static double PROFILE_TIME;
+
+static void PROFILE_BEGIN() {
+    PROFILE_TIME = get_time();
+}
+
+static void PROFILE_END(const std::string &prefix) {
+    std::cerr << prefix << ": " << std::setprecision(3) << std::fixed << 1000.0 * (get_time() - PROFILE_TIME) << "ms" << std::endl;
+}
+
 template<typename in_real, typename out_real>
 void fsai_impl(csr_matrix<out_real> &Ainv1,
     csr_matrix<out_real> &Ainv2,
     const csr_matrix<in_real> &A) {
 
     /// Calculate transposed A
+    PROFILE_BEGIN();
     csr_matrix<in_real> AT = csr_transpose(A);
+    PROFILE_END("csr_transpose");
 
     /// Generate pattern for Ainv1
+    PROFILE_BEGIN();
     Ainv1 = square_pattern<in_real, out_real>(A);
+    PROFILE_END("square_pattern");
 
     /// Calculate Ainv1
+    PROFILE_BEGIN();
     calculate_factor(Ainv1, AT);
+    PROFILE_END("calculate_factor");
 
     /// Transform Ainv1 (for CUDA solver)
     //Ainv1 = out_transform(Ainv1);
 
     /// Calculate transposed Ainv2
+    PROFILE_BEGIN();
     Ainv2 = csr_transpose(Ainv1);
+    PROFILE_END("csr_transpose");
 
 }
 
